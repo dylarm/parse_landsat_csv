@@ -14,10 +14,19 @@ the scene IDs necessary to download the desired scenes.
 import argparse
 import errno
 import os
+import pandas as pd
 from argparse import Namespace
 from datetime import datetime
 from pathlib import Path
 from pprint import pprint
+from typing import List
+
+
+DATE_COLS: List[str] = [
+    'Tile_Production_Date',
+    'acquisitionDate',
+    'dateUpdated'
+]
 
 
 def _str_to_datetime(date: str)-> datetime:
@@ -148,7 +157,12 @@ def parse_csv(args: Namespace) -> None:
     # Quick file tests
     if not _paths_good(input_file, output_file, args.overwrite):
         return
-
+    # Read file and begin parsing
+    input_csv = pd.read_csv(input_file,
+                            nrows=5,  # 5 for testing
+                            parse_dates=DATE_COLS,
+                            date_parser=_str_to_datetime
+                            )
 
 
 def main() -> None:
