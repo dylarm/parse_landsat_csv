@@ -117,6 +117,17 @@ def parse_args() -> Namespace:
               'Alaska, or Hawaii, respectively.'
               )
     )
+    parser.add_argument(
+        '-s', '--sensor',
+        type=str,
+        action='store',
+        required=False,
+        help=('(Optional) sensor type. Comma-separated values of:\n'
+              'OLI, TIRS, TM, or ETM\n'
+              'e.g. \'-s OLI,ETM\' will only return entries that used the'
+              'OLI or ETM sensor'
+              )
+    )
     args = parser.parse_args()
     if not args.output:
         args.output = Path('./scene_ids.txt')
