@@ -169,6 +169,7 @@ def parse_csv(args: Namespace) -> None:
     if not _paths_good(input_file, output_file, args.overwrite):
         return
     # Read file and begin parsing
+    print(f'{input_file.as_posix()} -> {output_file.as_posix()}')
     input_csv = pd.read_csv(input_file,
                             nrows=10000,  # 10,000 for testing
                             parse_dates=DATE_COLS,
@@ -185,27 +186,33 @@ def parse_csv(args: Namespace) -> None:
         # List of bools of rows to keep
         nrows: int = input_csv.shape[0]
         to_keep = [True] * nrows  # Start with all of them
+        print(f'Filtering on {nrows} entries')
         if args.start_date:
+            print(f'Removing entries before {args.start_date}')
             to_keep = [
                 all(t) for t in
                 zip(to_keep, input_csv['acquisitionDate']>=args.start_date)
             ]
         if args.end_date:
+            print(f'Removing entries after {args.end_date}')
             to_keep = [
                 all(t) for t in
                 zip(to_keep, input_csv['acquisitionDate']<=args.end_date)
             ]
         if args.cloud_cover:
+            print(f'Removing entries with more than {args.cloud_cover}% CC')
             to_keep = [
                 all(t) for t in
                 zip(to_keep, input_csv['cloudCover']<=args.cloud_cover)
             ]
         if args.grid:
+            print(f'Filtering on grid values {args.grid}')
             # Parse grid value
             h,v = args.grid.split(',')
             # Filter one at a time
             try:
                 h = int(h)
+                print(f'Horizontal: {h}')
                 to_keep = [
                     all(t) for t in
                     zip(to_keep, input_csv['Tile_Grid_Horizontal']==h)
@@ -214,6 +221,7 @@ def parse_csv(args: Namespace) -> None:
                 pass
             try:
                 v = int(v)
+                print(f'Vertical: {v}')
                 to_keep = [
                     all(t) for t in
                     zip(to_keep, input_csv['Tile_Grid_Vertical']==v)
@@ -221,6 +229,7 @@ def parse_csv(args: Namespace) -> None:
             except ValueError:
                 pass
         if args.region:
+            print(f'Filtering on region {args.region}')
             to_keep = [
                 all(t) for t in
                 zip(to_keep, input_csv['Tile_Grid_Region']==args.region)
