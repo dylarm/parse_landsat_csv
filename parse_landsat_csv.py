@@ -84,6 +84,31 @@ def parse_args() -> Namespace:
         args.output = Path('./scene_ids.txt')
     return args
 
+def _check_paths(input_path: Path, output_path: Path) -> None:
+    """
+    Check appropriate conditions for paths, raising necessary errors
+
+    :param input_path: Path
+    :param output_path: Path
+    :return: None
+    """
+    if not input_path.exists():
+        raise FileNotFoundError(errno.ENOENT,
+                                os.strerror(errno.ENOENT),
+                                input_path.as_posix())
+    if input_path == output_path:
+        raise ValueError('Input and output must be different!')
+    if not output_path.is_file():
+        raise OSError(f'Output must be a filename')
+    if output_path.exists():
+        print(f'File \'{output_path.as_posix()}\' exists!')
+        do_del = input('Delete/overwrite? [y/N] ')
+        if do_del == 'y':
+            os.remove(output_path)
+        else:
+            print('Not continuing.')
+            return
+
 def parse_csv(args: Namespace) -> None:
     """
     Parse the given CSV file, filtering as necessary, and write out the scenes
@@ -94,22 +119,7 @@ def parse_csv(args: Namespace) -> None:
     input_file: Path = args.filename
     output_file: Path = args.output
     # Quick file tests
-    if not input_file.exists():
-        raise FileNotFoundError(errno.ENOENT,
-                                os.strerror(errno.ENOENT),
-                                input_file.as_posix())
-    if input_file == output_file:
-        raise ValueError('Input and output must be different!')
-    if not output_file.is_file():
-        raise OSError(f'Output must be a filename')
-    if output_file.exists():
-        print(f'File \'{output_file.as_posix()}\' exists!')
-        do_del = input('Delete/overwrite? [y/N] ')
-        if do_del == 'y':
-            os.remove(output_file)
-        else:
-            print('Not continuing.')
-            return
+    _check_paths(input_file, output_file)
 
 def main() -> None:
     args: Namespace = parse_args()
