@@ -197,6 +197,11 @@ def parse_csv(args: Namespace) -> None:
                 all(t) for t in
                 zip(to_keep, input_csv['acquisitionDate']<=args.end_date)
             ]
+        if args.cloud_cover:
+            to_keep = [
+                all(t) for t in
+                zip(to_keep, input_csv['cloudCover']<=args.cloud_cover)
+            ]
     # Now write out the scene IDs
 
 
