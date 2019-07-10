@@ -178,6 +178,16 @@ def parse_csv(args: Namespace) -> None:
                             )
     test_types = [(col,input_csv[col].dtype,input_csv[col][1]) for col in input_csv]
     pprint(test_types)
+    # Start filtering
+    if any([args.start_date,
+            args.end_date,
+            args.cloud_cover,
+            args.grid,
+            args.region]):
+        # List of bools of rows to keep
+        nrows: int = input_csv.shape[0]
+        to_keep = [True] * nrows  # Start with all of them
+    # Now write out the scene IDs
 
 
 def main() -> None:
