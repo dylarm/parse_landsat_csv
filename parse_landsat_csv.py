@@ -100,16 +100,19 @@ def _paths_good(input_path: Path, output_path: Path) -> bool:
                                 input_path.as_posix())
     if input_path == output_path:
         raise ValueError('Input and output must be different!')
-    if not output_path.is_file():
-        raise OSError(f'Output must be a filename')
     if output_path.exists():
         print(f'File \'{output_path.as_posix()}\' exists!')
         do_del = input('Delete/overwrite? [y/N] ')
         if do_del == 'y':
             output_path.unlink()
+            output_path.touch()
         else:
             print('Not continuing.')
             return False
+    else:
+        output_path.touch()
+    if not output_path.is_file():
+        raise OSError(f'Output must be a filename')
     return True
 
 
