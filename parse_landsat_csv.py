@@ -29,6 +29,13 @@ def parse_args() -> Namespace:
         help='(Required) filename of the CSV file'
     )
     parser.add_argument(
+        '-o','--output',
+        type=Path,
+        action='store',
+        required=False,
+        help='(Optional) filename of output text file'
+    )
+    parser.add_argument(
         '-sd', '--start-date',
         type=str,
         action='store',
@@ -71,6 +78,8 @@ def parse_args() -> Namespace:
               )
     )
     args = parser.parse_args()
+    if not args.output:
+        args.output = Path('./scene_ids.txt')
     return args
 
 
