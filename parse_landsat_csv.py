@@ -176,8 +176,6 @@ def parse_csv(args: Namespace) -> None:
                             usecols=USE_COLS,
                             verbose=True
                             )
-    test_types = [(col,input_csv[col].dtype,input_csv[col][1]) for col in input_csv]
-    pprint(test_types)
     # Start filtering
     if any([args.start_date,
             args.end_date,
