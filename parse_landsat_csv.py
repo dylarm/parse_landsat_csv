@@ -202,6 +202,11 @@ def parse_csv(args: Namespace) -> None:
                 all(t) for t in
                 zip(to_keep, input_csv['cloudCover']<=args.cloud_cover)
             ]
+        if args.region:
+            to_keep = [
+                all(t) for t in
+                zip(to_keep, input_csv['Tile_Grid_Region']==args.region)
+            ]
     # Now write out the scene IDs
 
 
