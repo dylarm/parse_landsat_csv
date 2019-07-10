@@ -31,7 +31,7 @@ def parse_args() -> Namespace:
         help='(Required) filename of the CSV file'
     )
     parser.add_argument(
-        '-o','--output',
+        '-o', '--output',
         type=Path,
         action='store',
         required=False,
@@ -57,7 +57,8 @@ def parse_args() -> Namespace:
         action='store',
         required=False,
         help=('(Optional) maximum percentage of cloud cover\n\n'
-              'e.g. "-c 80" means that cloud coverage greater than 80 percent will be discarded'
+              'e.g. "-c 80" means that cloud coverage greater than'
+              '80 percent will be discarded'
               )
     )
     parser.add_argument(
@@ -84,6 +85,7 @@ def parse_args() -> Namespace:
         args.output = Path('./scene_ids.txt')
     return args
 
+
 def _check_paths(input_path: Path, output_path: Path) -> None:
     """
     Check appropriate conditions for paths, raising necessary errors
@@ -109,6 +111,7 @@ def _check_paths(input_path: Path, output_path: Path) -> None:
             print('Not continuing.')
             return
 
+
 def parse_csv(args: Namespace) -> None:
     """
     Parse the given CSV file, filtering as necessary, and write out the scenes
@@ -120,6 +123,7 @@ def parse_csv(args: Namespace) -> None:
     output_file: Path = args.output
     # Quick file tests
     _check_paths(input_file, output_file)
+
 
 def main() -> None:
     args: Namespace = parse_args()
