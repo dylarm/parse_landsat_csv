@@ -27,6 +27,17 @@ DATE_COLS: List[str] = [
     'acquisitionDate',
     'dateUpdated'
 ]
+USE_COLS :List[str] = [
+    *DATE_COLS,
+    'Entity_ID',
+    'Fill',
+    'Tile_Grid_Horizontal',
+    'Tile_Grid_Region',
+    'Tile_Grid_Vertical',
+    'Tile_Identifier',
+    'cloudCover',
+    'sensor'
+]
 
 
 def _str_to_datetime(date: str)-> datetime:
@@ -159,10 +170,14 @@ def parse_csv(args: Namespace) -> None:
         return
     # Read file and begin parsing
     input_csv = pd.read_csv(input_file,
-                            nrows=5,  # 5 for testing
+                            nrows=10000,  # 10,000 for testing
                             parse_dates=DATE_COLS,
-                            date_parser=_str_to_datetime
+                            date_parser=_str_to_datetime,
+                            usecols=USE_COLS,
+                            verbose=True
                             )
+    test_types = [(col,input_csv[col].dtype,input_csv[col][1]) for col in input_csv]
+    pprint(test_types)
 
 
 def main() -> None:
