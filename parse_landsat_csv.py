@@ -187,6 +187,16 @@ def parse_csv(args: Namespace) -> None:
         # List of bools of rows to keep
         nrows: int = input_csv.shape[0]
         to_keep = [True] * nrows  # Start with all of them
+        if args.start_date:
+            to_keep = [
+                all(t) for t in
+                zip(to_keep, input_csv['acquisitionDate']>=args.start_date)
+            ]
+        if args.end_date:
+            to_keep = [
+                all(t) for t in
+                zip(to_keep, input_csv['acquisitionDate']<=args.end_date)
+            ]
     # Now write out the scene IDs
 
 
