@@ -12,6 +12,8 @@ the scene IDs necessary to download the desired scenes.
 """
 
 import argparse
+import errno
+import os
 from argparse import Namespace
 from pathlib import Path
 from pprint import pprint
@@ -82,11 +84,38 @@ def parse_args() -> Namespace:
         args.output = Path('./scene_ids.txt')
     return args
 
+def parse_csv(args: Namespace) -> None:
+    """
+    Parse the given CSV file, filtering as necessary, and write out the scenes
+
+    :param args: Namespace
+    :return: None
+    """
+    input_file: Path = args.filename
+    output_file: Path = args.output
+    # Quick file tests
+    if not input_file.exists():
+        raise FileNotFoundError(errno.ENOENT,
+                                os.strerror(errno.ENOENT),
+                                input_file.as_posix())
+    if input_file == output_file:
+        raise ValueError('Input and output must be different!')
+    if not output_file.is_file():
+        raise OSError(f'Output must be a filename')
+    if output_file.exists():
+        print(f'File \'{output_file.as_posix()}\' exists!')
+        do_del = input('Delete/overwrite? [y/N] ')
+        if do_del == 'y':
+            os.remove(output_file)
+        else:
+            print('Not continuing.')
+            return
 
 def main() -> None:
     args: Namespace = parse_args()
     print(type(args))
     pprint(args)
+    parse_csv(args)
 
 
 if __name__ == '__main__':
