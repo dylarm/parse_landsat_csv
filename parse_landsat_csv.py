@@ -38,6 +38,11 @@ def parse_args() -> Namespace:
         help='(Optional) filename of output text file'
     )
     parser.add_argument(
+        '--overwrite',
+        action='store_true',
+        help='(Optional) automatically overwrite output file'
+    )
+    parser.add_argument(
         '-sd', '--start-date',
         type=str,
         action='store',
@@ -86,7 +91,7 @@ def parse_args() -> Namespace:
     return args
 
 
-def _paths_good(input_path: Path, output_path: Path) -> bool:
+def _paths_good(input_path: Path, output_path: Path, overwrite: bool) -> bool:
     """
     Check appropriate conditions for paths, raising necessary errors
 
@@ -100,7 +105,7 @@ def _paths_good(input_path: Path, output_path: Path) -> bool:
                                 input_path.as_posix())
     if input_path == output_path:
         raise ValueError('Input and output must be different!')
-    if output_path.exists():
+    if output_path.exists() and not overwrite:
         print(f'File \'{output_path.as_posix()}\' exists!')
         do_del = input('Delete/overwrite? [y/N] ')
         if do_del == 'y':
@@ -109,7 +114,10 @@ def _paths_good(input_path: Path, output_path: Path) -> bool:
         else:
             print('Not continuing.')
             return False
-    else:
+    elif output_path.exists() and overwrite:
+        output_path.unlink()
+        output_path.touch()
+    elif not output_path.exists():
         output_path.touch()
     if not output_path.is_file():
         raise OSError(f'Output must be a filename')
@@ -126,7 +134,7 @@ def parse_csv(args: Namespace) -> None:
     input_file: Path = args.filename
     output_file: Path = args.output
     # Quick file tests
-    if not _paths_good(input_file, output_file):
+    if not _paths_good(input_file, output_file, args.overwrite):
         return
 
 
