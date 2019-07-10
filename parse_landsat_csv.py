@@ -15,8 +15,20 @@ import argparse
 import errno
 import os
 from argparse import Namespace
+from datetime import datetime
 from pathlib import Path
 from pprint import pprint
+
+
+def _str_to_datetime(date: str)-> datetime:
+    if isinstance(date, datetime):
+        return date
+    elif isinstance(date, str):
+        try:
+            return datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            return datetime.strptime(date, '%Y/%m/%d')
+    raise ValueError(f'Cannot parse \'{date}\'')
 
 
 def parse_args() -> Namespace:
@@ -44,14 +56,14 @@ def parse_args() -> Namespace:
     )
     parser.add_argument(
         '-sd', '--start-date',
-        type=str,
+        type=_str_to_datetime,
         action='store',
         required=False,
         help='(Optional) starting/minimum date (YYYY-MM-DD) of the desired scenes'
     )
     parser.add_argument(
         '-ed', '--end-date',
-        type=str,
+        type=_str_to_datetime,
         action='store',
         required=False,
         help='(Optional) ending/maximum date (YYYY-MM-DD) of the desired scenes'
