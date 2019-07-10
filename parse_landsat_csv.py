@@ -202,6 +202,26 @@ def parse_csv(args: Namespace) -> None:
                 all(t) for t in
                 zip(to_keep, input_csv['cloudCover']<=args.cloud_cover)
             ]
+        if args.grid:
+            # Parse grid value
+            h,v = args.grid.split(',')
+            # Filter one at a time
+            try:
+                h = int(h)
+                to_keep = [
+                    all(t) for t in
+                    zip(to_keep, input_csv['Tile_Grid_Horizontal']==h)
+                ]
+            except ValueError:
+                pass
+            try:
+                v = int(v)
+                to_keep = [
+                    all(t) for t in
+                    zip(to_keep, input_csv['Tile_Grid_Vertical']==v)
+                ]
+            except ValueError:
+                pass
         if args.region:
             to_keep = [
                 all(t) for t in
