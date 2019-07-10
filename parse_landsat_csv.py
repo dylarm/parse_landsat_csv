@@ -86,7 +86,7 @@ def parse_args() -> Namespace:
     return args
 
 
-def _check_paths(input_path: Path, output_path: Path) -> None:
+def _paths_good(input_path: Path, output_path: Path) -> bool:
     """
     Check appropriate conditions for paths, raising necessary errors
 
@@ -106,10 +106,11 @@ def _check_paths(input_path: Path, output_path: Path) -> None:
         print(f'File \'{output_path.as_posix()}\' exists!')
         do_del = input('Delete/overwrite? [y/N] ')
         if do_del == 'y':
-            os.remove(output_path)
+            output_path.unlink()
         else:
             print('Not continuing.')
-            return
+            return False
+    return True
 
 
 def parse_csv(args: Namespace) -> None:
@@ -122,7 +123,9 @@ def parse_csv(args: Namespace) -> None:
     input_file: Path = args.filename
     output_file: Path = args.output
     # Quick file tests
-    _check_paths(input_file, output_file)
+    if not _paths_good(input_file, output_file):
+        return
+
 
 
 def main() -> None:
