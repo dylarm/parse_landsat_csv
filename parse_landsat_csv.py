@@ -75,33 +75,33 @@ def parse_args() -> Namespace:
         type=Path,
         action='store',
         required=False,
-        help='(Optional) filename of output text file'
+        help='filename of output text file'
     )
     parser.add_argument(
         '--overwrite',
         action='store_true',
-        help='(Optional) automatically overwrite output file'
+        help='automatically overwrite output file'
     )
     parser.add_argument(
         '-sd', '--start-date',
         type=_str_to_datetime,
         action='store',
         required=False,
-        help='(Optional) starting/minimum date (YYYY-MM-DD) of the desired scenes'
+        help='starting/minimum date (YYYY-MM-DD) of the desired scenes'
     )
     parser.add_argument(
         '-ed', '--end-date',
         type=_str_to_datetime,
         action='store',
         required=False,
-        help='(Optional) ending/maximum date (YYYY-MM-DD) of the desired scenes'
+        help='ending/maximum date (YYYY-MM-DD) of the desired scenes'
     )
     parser.add_argument(
         '-c', '--cloud-cover',
         type=int,
         action='store',
         required=False,
-        help=('(Optional) maximum percentage of cloud cover\n\n'
+        help=('maximum percentage of cloud cover'
               'e.g. "-c 80" means that cloud coverage greater than'
               '80 percent will be discarded'
               )
@@ -111,8 +111,8 @@ def parse_args() -> Namespace:
         type=str,
         action='store',
         required=False,
-        help=('(Optional) ARD tile grid horizontal and vertical value\n'
-              'e.g. \'-g 3,12\' is the grid with a hor. 3 and vert. 12\n'
+        help=('ARD tile grid horizontal and vertical value'
+              'e.g. \'-g 3,12\' is the grid with a hor. 3 and vert. 12'
               'Note: most useful when specifying -r/--region below too'
               )
     )
@@ -121,7 +121,7 @@ def parse_args() -> Namespace:
         type=str,
         action='store',
         required=False,
-        help=('(Optional) region, one of CU/AK/HI for the Continental US,\n'
+        help=('region, one of CU/AK/HI for the Continental US,'
               'Alaska, or Hawaii, respectively.'
               )
     )
@@ -130,8 +130,8 @@ def parse_args() -> Namespace:
         type=str,
         action='store',
         required=False,
-        help=('(Optional) sensor type. Comma-separated values of:\n'
-              'OLI/TIRS, TM, or ETM\n'
+        help=('sensor type. Comma-separated values of:'
+              'OLI/TIRS, TM, or ETM.'
               'e.g. \'-s OLI/TIRS\' will only return entries that used only'
               'the OLI/TIRS sensor (i.e., Landsat 8)'
               )
