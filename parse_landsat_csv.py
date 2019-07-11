@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-import pandas as pd
+import pandas as pd  # type: ignore
 
 DATE_COLS: List[str] = [
     'Tile_Production_Date',
@@ -197,7 +197,7 @@ def parse_csv(args: Namespace) -> None:
             args.sensor]):
         # List of bools of rows to keep
         nrows: int = input_csv.shape[0]
-        to_keep = [True] * nrows  # Start with all of them
+        to_keep: List[bool] = [True] * nrows  # Start with all of them
         print(f'Filtering on {nrows} entries')
         if args.start_date:
             print(f'Removing entries before {args.start_date}')
@@ -251,7 +251,7 @@ def parse_csv(args: Namespace) -> None:
             sensors: List[str] = args.sensor.split(',')
             to_keep = [
                 all(t) for t in
-                zip(to_keep, input_csv['sensor'] in sensors)
+                zip(to_keep, input_csv['sensor'] in sensors)  # type: ignore
             ]
         print(f'Keeping {sum(to_keep)} entries')
         input_csv = input_csv[to_keep]
