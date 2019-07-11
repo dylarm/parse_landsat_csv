@@ -173,6 +173,7 @@ def _paths_good(input_path: Path, output_path: Path, overwrite: bool) -> bool:
 
 
 def __start_date(input_csv, date: datetime) -> List[bool]:
+    to_keep: List[bool]
     if date:
         print(f'Removing entries before {date}')
         to_keep = input_csv['acquisitionDate'] >= date
@@ -182,6 +183,7 @@ def __start_date(input_csv, date: datetime) -> List[bool]:
 
 
 def __end_date(input_csv, date: datetime) -> List[bool]:
+    to_keep: List[bool]
     if date:
         print(f'Removing entries after {date}')
         to_keep = input_csv['acquisitionDate'] <= date
@@ -191,6 +193,7 @@ def __end_date(input_csv, date: datetime) -> List[bool]:
 
 
 def __cloud_cover(input_csv, cloud_cover: int) -> List[bool]:
+    to_keep: List[bool]
     if cloud_cover:
         print(f'Removing entries with more than {cloud_cover}% CC')
         to_keep = input_csv['cloudCover'] <= cloud_cover
@@ -200,7 +203,7 @@ def __cloud_cover(input_csv, cloud_cover: int) -> List[bool]:
 
 
 def __grid(input_csv, grid: str) -> List[bool]:
-    to_keep = [True] * input_csv.shape[0]
+    to_keep: List[bool] = [True] * input_csv.shape[0]
     if grid:
         print(f'Filtering on grid values {grid}')
         # Parse grid value
@@ -224,6 +227,7 @@ def __grid(input_csv, grid: str) -> List[bool]:
 
 
 def __region(input_csv, region: str) -> List[bool]:
+    to_keep: List[bool]
     if region:
         print(f'Filtering on region {region}')
         to_keep = input_csv['Tile_Grid_Region'] == region
@@ -233,7 +237,7 @@ def __region(input_csv, region: str) -> List[bool]:
 
 
 def __sensor(input_csv, sensor: str) -> List[bool]:
-    to_keep = [True] * input_csv.shape[0]
+    to_keep: List[bool] = [True] * input_csv.shape[0]
     if sensor:
         print(f'Filtering on sensor(s) {sensor}')
         sensors: List[str] = sensor.split(',')
@@ -244,13 +248,13 @@ def __sensor(input_csv, sensor: str) -> List[bool]:
 
 def _filter_csv(input_csv, args: Namespace):
     print(f'Filtering on {input_csv.shape[0]} entries')
-    to_keep = [all(t) for t in
-               zip(__start_date(input_csv, args.start_date),
-                   __end_date(input_csv, args.end_date),
-                   __cloud_cover(input_csv, args.cloud_cover),
-                   __grid(input_csv, args.grid),
-                   __region(input_csv, args.region),
-                   __sensor(input_csv, args.sensor))]
+    to_keep: List[bool] = [all(t) for t in
+                           zip(__start_date(input_csv, args.start_date),
+                               __end_date(input_csv, args.end_date),
+                               __cloud_cover(input_csv, args.cloud_cover),
+                               __grid(input_csv, args.grid),
+                               __region(input_csv, args.region),
+                               __sensor(input_csv, args.sensor))]
     print(f'Keeping {sum(to_keep)} entries')
     return input_csv[to_keep]
 
