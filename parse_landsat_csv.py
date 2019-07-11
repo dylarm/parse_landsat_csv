@@ -14,20 +14,19 @@ the scene IDs necessary to download the desired scenes.
 import argparse
 import errno
 import os
-import pandas as pd
 from argparse import Namespace
 from datetime import datetime
 from pathlib import Path
-from pprint import pprint
 from typing import List
 
+import pandas as pd
 
 DATE_COLS: List[str] = [
     'Tile_Production_Date',
     'acquisitionDate',
     'dateUpdated'
 ]
-USE_COLS :List[str] = [
+USE_COLS: List[str] = [
     *DATE_COLS,
     'Entity_ID',
     'Fill',
@@ -40,7 +39,7 @@ USE_COLS :List[str] = [
 ]
 
 
-def _str_to_datetime(date: str)-> datetime:
+def _str_to_datetime(date: str) -> datetime:
     if isinstance(date, datetime):
         return date
     elif isinstance(date, str):
@@ -128,6 +127,7 @@ def parse_args() -> Namespace:
               'the OLI/TIRS sensor (i.e., Landsat 8)'
               )
     )
+    # TODO: Add info option that won't filter the data, just show a summary.
     args = parser.parse_args()
     if not args.output:
         args.output = Path('./scene_ids.txt')
@@ -203,31 +203,31 @@ def parse_csv(args: Namespace) -> None:
             print(f'Removing entries before {args.start_date}')
             to_keep = [
                 all(t) for t in
-                zip(to_keep, input_csv['acquisitionDate']>=args.start_date)
+                zip(to_keep, input_csv['acquisitionDate'] >= args.start_date)
             ]
         if args.end_date:
             print(f'Removing entries after {args.end_date}')
             to_keep = [
                 all(t) for t in
-                zip(to_keep, input_csv['acquisitionDate']<=args.end_date)
+                zip(to_keep, input_csv['acquisitionDate'] <= args.end_date)
             ]
         if args.cloud_cover:
             print(f'Removing entries with more than {args.cloud_cover}% CC')
             to_keep = [
                 all(t) for t in
-                zip(to_keep, input_csv['cloudCover']<=args.cloud_cover)
+                zip(to_keep, input_csv['cloudCover'] <= args.cloud_cover)
             ]
         if args.grid:
             print(f'Filtering on grid values {args.grid}')
             # Parse grid value
-            h,v = args.grid.split(',')
+            h, v = args.grid.split(',')
             # Filter one at a time
             try:
                 h = int(h)
                 print(f'Horizontal: {h}')
                 to_keep = [
                     all(t) for t in
-                    zip(to_keep, input_csv['Tile_Grid_Horizontal']==h)
+                    zip(to_keep, input_csv['Tile_Grid_Horizontal'] == h)
                 ]
             except ValueError:
                 pass
@@ -236,7 +236,7 @@ def parse_csv(args: Namespace) -> None:
                 print(f'Vertical: {v}')
                 to_keep = [
                     all(t) for t in
-                    zip(to_keep, input_csv['Tile_Grid_Vertical']==v)
+                    zip(to_keep, input_csv['Tile_Grid_Vertical'] == v)
                 ]
             except ValueError:
                 pass
@@ -244,7 +244,7 @@ def parse_csv(args: Namespace) -> None:
             print(f'Filtering on region {args.region}')
             to_keep = [
                 all(t) for t in
-                zip(to_keep, input_csv['Tile_Grid_Region']==args.region)
+                zip(to_keep, input_csv['Tile_Grid_Region'] == args.region)
             ]
         if args.sensor:
             print(f'Filtering on sensor(s) {args.sensor}')
@@ -256,7 +256,7 @@ def parse_csv(args: Namespace) -> None:
         print(f'Keeping {sum(to_keep)} entries')
         input_csv = input_csv[to_keep]
     # Now write out the scene IDs
-    with open(output_file,'w') as out:
+    with open(output_file, 'w') as out:
         print(f'Writing scenes to {output_file.as_posix()}')
         out.write('\n'.join(input_csv['Entity_ID']))
         print('Done writing')
