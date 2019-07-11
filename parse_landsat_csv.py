@@ -17,7 +17,7 @@ import os
 from argparse import Namespace
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
 import pandas as pd  # type: ignore
 
@@ -40,6 +40,11 @@ USE_COLS: List[str] = [
 
 
 def _str_to_datetime(date: str) -> datetime:
+    """
+    Convert string of Y-M-D into proper datetime object
+    :param date: str
+    :return: datetime
+    """
     if isinstance(date, datetime):
         return date
     elif isinstance(date, str):
@@ -51,6 +56,10 @@ def _str_to_datetime(date: str) -> datetime:
 
 
 def parse_args() -> Namespace:
+    """
+    Parse CLI arguments
+    :return: Namespace  # of argparse
+    """
     parser = argparse.ArgumentParser(
         description='Parse and filter Landsat metadata CSV file'
     )
@@ -189,7 +198,14 @@ def _paths_good(input_path: Path, output_path: Path, overwrite: bool) -> bool:
     return True
 
 
-def __start_date(input_csv, date: datetime) -> List[bool]:
+def __start_date(input_csv: Any, date: datetime) -> List[bool]:
+    """
+    Remove dates earlier than a given time
+
+    :param input_csv: Any  # until pandas supports typing
+    :param date: datetime
+    :return: List[bool]
+    """
     to_keep: List[bool]
     if date:
         print(f'Removing entries before {date}')
@@ -199,7 +215,14 @@ def __start_date(input_csv, date: datetime) -> List[bool]:
     return to_keep
 
 
-def __end_date(input_csv, date: datetime) -> List[bool]:
+def __end_date(input_csv: Any, date: datetime) -> List[bool]:
+    """
+    Remove dates later than the given date
+
+    :param input_csv: Any
+    :param date: datetime
+    :return: List[bool]
+    """
     to_keep: List[bool]
     if date:
         print(f'Removing entries after {date}')
@@ -209,7 +232,14 @@ def __end_date(input_csv, date: datetime) -> List[bool]:
     return to_keep
 
 
-def __cloud_cover(input_csv, cloud_cover: int) -> List[bool]:
+def __cloud_cover(input_csv: Any, cloud_cover: int) -> List[bool]:
+    """
+    Remove entries whose cloud cover is greater than the given percentage
+
+    :param input_csv: Any
+    :param cloud_cover: int
+    :return: List[bool]
+    """
     to_keep: List[bool]
     if cloud_cover:
         print(f'Removing entries with more than {cloud_cover}% CC')
@@ -219,7 +249,14 @@ def __cloud_cover(input_csv, cloud_cover: int) -> List[bool]:
     return to_keep
 
 
-def __grid(input_csv, grid: str) -> List[bool]:
+def __grid(input_csv: Any, grid: str) -> List[bool]:
+    """
+    Remove entries whose grid values are anything but the supplied hor/vert
+
+    :param input_csv: Any
+    :param grid: str
+    :return: List[bool]
+    """
     to_keep: List[bool] = [True] * input_csv.shape[0]
     if grid:
         print(f'Filtering on grid values {grid}')
@@ -243,7 +280,14 @@ def __grid(input_csv, grid: str) -> List[bool]:
     return to_keep
 
 
-def __region(input_csv, region: str) -> List[bool]:
+def __region(input_csv: Any, region: str) -> List[bool]:
+    """
+    Remove entries that aren't the given region
+
+    :param input_csv: Any
+    :param region: str
+    :return: List[bool]
+    """
     to_keep: List[bool]
     if region:
         print(f'Filtering on region {region}')
@@ -253,7 +297,14 @@ def __region(input_csv, region: str) -> List[bool]:
     return to_keep
 
 
-def __sensor(input_csv, sensor: str) -> List[bool]:
+def __sensor(input_csv: Any, sensor: str) -> List[bool]:
+    """
+    Remove entries that don't use the given sensor(s)
+
+    :param input_csv: Any
+    :param sensor: str
+    :return: List[bool]
+    """
     to_keep: List[bool] = [True] * input_csv.shape[0]
     if sensor:
         print(f'Filtering on sensor(s) {sensor}')
@@ -263,7 +314,22 @@ def __sensor(input_csv, sensor: str) -> List[bool]:
     return to_keep
 
 
-def _filter_csv(input_csv, args: Namespace):
+def _filter_csv(input_csv: Any, args: Namespace) -> Any:
+    """
+    Remove entries based on supplied arguments
+
+    args should come from parse_args() and have the following methods:
+        start_date
+        end_date
+        cloud_cover
+        grid
+        region
+        sensor
+
+    :param input_csv: Any
+    :param args: Namespace
+    :return: Any  # The filtered input_csv
+    """
     print(f'Filtering on {input_csv.shape[0]} entries')
     to_keep: List[bool] = [all(t) for t in
                            zip(__start_date(input_csv, args.start_date),
@@ -290,13 +356,13 @@ def parse_csv(args: Namespace) -> None:
         return
     # Read file and begin parsing
     print(f'{input_file.as_posix()} -> {output_file.as_posix()}')
-    input_csv = pd.read_csv(input_file,
-                            # nrows=10000,  # 10,000 for testing
-                            parse_dates=DATE_COLS,
-                            date_parser=_str_to_datetime,
-                            usecols=USE_COLS,
-                            verbose=args.verbose
-                            )
+    input_csv: Any = pd.read_csv(input_file,
+                                 # nrows=10000,  # 10,000 for testing
+                                 parse_dates=DATE_COLS,
+                                 date_parser=_str_to_datetime,
+                                 usecols=USE_COLS,
+                                 verbose=args.verbose
+                                 )
     # Start filtering
     if any([args.start_date,
             args.end_date,
