@@ -167,66 +167,85 @@ def _paths_good(input_path: Path, output_path: Path, overwrite: bool) -> bool:
     return True
 
 
-def _filter_csv(input_csv, args: Namespace):  # noqa: C901
-    # TODO: Reduce flake8 complexity (currently 11)
-    # List of bools of rows to keep
-    nrows: int = input_csv.shape[0]
-    to_keep: List[bool] = [True] * nrows  # Start with all of them
-    print(f'Filtering on {nrows} entries')
-    if args.start_date:
-        print(f'Removing entries before {args.start_date}')
-        to_keep = [
-            all(t) for t in
-            zip(to_keep, input_csv['acquisitionDate'] >= args.start_date)
-        ]
-    if args.end_date:
-        print(f'Removing entries after {args.end_date}')
-        to_keep = [
-            all(t) for t in
-            zip(to_keep, input_csv['acquisitionDate'] <= args.end_date)
-        ]
-    if args.cloud_cover:
-        print(f'Removing entries with more than {args.cloud_cover}% CC')
-        to_keep = [
-            all(t) for t in
-            zip(to_keep, input_csv['cloudCover'] <= args.cloud_cover)
-        ]
-    if args.grid:
-        print(f'Filtering on grid values {args.grid}')
+def __start_date(input_csv, date: datetime) -> List[bool]:
+    if date:
+        print(f'Removing entries before {date}')
+        to_keep = input_csv['acquisitionDate'] >= date
+    else:
+        to_keep = [True] * input_csv.shape[0]
+    return to_keep
+
+
+def __end_date(input_csv, date: datetime) -> List[bool]:
+    if date:
+        print(f'Removing entries after {date}')
+        to_keep = input_csv['acquisitionDate'] <= date
+    else:
+        to_keep = [True] * input_csv.shape[0]
+    return to_keep
+
+
+def __cloud_cover(input_csv, cloud_cover: int) -> List[bool]:
+    if cloud_cover:
+        print(f'Removing entries with more than {cloud_cover}% CC')
+        to_keep = input_csv['cloudCover'] <= cloud_cover
+    else:
+        to_keep = [True] * input_csv.shape[0]
+    return to_keep
+
+
+def __grid(input_csv, grid: str) -> List[bool]:
+    to_keep = [True] * input_csv.shape[0]
+    if grid:
+        print(f'Filtering on grid values {grid}')
         # Parse grid value
-        h, v = args.grid.split(',')
+        h, v = grid.split(',')
         # Filter one at a time
         try:
-            h = int(h)
+            hi: int = int(h)
             print(f'Horizontal: {h}')
-            to_keep = [
-                all(t) for t in
-                zip(to_keep, input_csv['Tile_Grid_Horizontal'] == h)
-            ]
+            to_keep = [all(t) for t in
+                       zip(to_keep, input_csv['Tile_Grid_Horizontal'] == hi)]
         except ValueError:
             pass
         try:
-            v = int(v)
+            vi: int = int(v)
             print(f'Vertical: {v}')
-            to_keep = [
-                all(t) for t in
-                zip(to_keep, input_csv['Tile_Grid_Vertical'] == v)
-            ]
+            to_keep = [all(t) for t in
+                       zip(to_keep, input_csv['Tile_Grid_Vertical'] == vi)]
         except ValueError:
             pass
-    if args.region:
-        print(f'Filtering on region {args.region}')
-        to_keep = [
-            all(t) for t in
-            zip(to_keep, input_csv['Tile_Grid_Region'] == args.region)
-        ]
-    if args.sensor:
-        print(f'Filtering on sensor(s) {args.sensor}')
-        sensors: List[str] = args.sensor.split(',')
-        to_keep = [
-            all(t) for t in
-            zip(to_keep, input_csv['sensor'] in sensors)  # type: ignore
-        ]
+    return to_keep
+
+
+def __region(input_csv, region: str) -> List[bool]:
+    if region:
+        print(f'Filtering on region {region}')
+        to_keep = input_csv['Tile_Grid_Region'] == region
+    else:
+        to_keep = [True] * input_csv.shape[0]
+    return to_keep
+
+
+def __sensor(input_csv, sensor: str) -> List[bool]:
+    to_keep = [True] * input_csv.shape[0]
+    if sensor:
+        print(f'Filtering on sensor(s) {sensor}')
+        sensors: List[str] = sensor.split(',')
+        for sen in sensors:
+            to_keep = [all(t) for t in zip(to_keep, input_csv['sensor'] == sen)]
+    return to_keep
+
+
+def _filter_csv(input_csv, args: Namespace):
+    print(f'Filtering on {input_csv.shape[0]} entries')
+    to_keep = [all(t) for t in
+               zip(__start_date(input_csv, args.start_date),
+                   __end_date(input_csv, args.end_date),
+                   __cloud_cover(input_csv, args.cloud_cover),
+                   __grid(input_csv, args.grid),
+                   __region(input_csv, args.region),
+                   __sensor(input_csv, args.sensor))]
     print(f'Keeping {sum(to_keep)} entries')
     return input_csv[to_keep]
 
