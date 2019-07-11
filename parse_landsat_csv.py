@@ -261,7 +261,7 @@ def parse_csv(args: Namespace) -> None:
             args.sensor]):
         input_csv = _filter_csv(input_csv, args)
     # Now write out the scene IDs
-    with open(output_file, 'w') as out:
+    with output_file.open(mode='w') as out:
         print(f'Writing scenes to {output_file.as_posix()}')
         out.write('\n'.join(input_csv['Entity_ID']))
         print('Done writing')
