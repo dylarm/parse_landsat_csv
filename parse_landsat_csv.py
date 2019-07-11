@@ -259,8 +259,6 @@ def parse_csv(args: Namespace) -> None:
 
 def main() -> None:
     args: Namespace = parse_args()
-    print(type(args))
-    pprint(args)
     parse_csv(args)
 
 
