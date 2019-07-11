@@ -123,7 +123,7 @@ def parse_args() -> Namespace:
         action='store',
         required=False,
         help=('(Optional) sensor type. Comma-separated values of:\n'
-              'OLI/TIRS or ETM\n'
+              'OLI/TIRS, TM, or ETM\n'
               'e.g. \'-s OLI/TIRS\' will only return entries that used only'
               'the OLI/TIRS sensor (i.e., Landsat 8)'
               )
@@ -182,7 +182,7 @@ def parse_csv(args: Namespace) -> None:
     # Read file and begin parsing
     print(f'{input_file.as_posix()} -> {output_file.as_posix()}')
     input_csv = pd.read_csv(input_file,
-                            nrows=10000,  # 10,000 for testing
+                            # nrows=10000,  # 10,000 for testing
                             parse_dates=DATE_COLS,
                             date_parser=_str_to_datetime,
                             usecols=USE_COLS,
