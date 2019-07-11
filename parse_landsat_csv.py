@@ -21,6 +21,16 @@ from typing import Any, List
 
 import pandas as pd  # type: ignore
 
+# The type Any is only used because pandas doesn't currently have full typing
+# support. There are technically efforts to do so, especially on user-facing
+# interfaces such as dataframes, but the effort is still ongoing.
+
+# Global constants
+# These probably *could* be programmatically determined from some sort of fuzzy
+# matching, but also it's unlikely that the USGS is going to change the file
+# format anytime soon.
+# The main danger here is that any slight change in either how USGS names the
+# columns, or how pandas processes the header strings, will basically break it.
 DATE_COLS: List[str] = [
     'Tile_Production_Date',
     'acquisitionDate',
@@ -42,6 +52,7 @@ USE_COLS: List[str] = [
 def _str_to_datetime(date: str) -> datetime:
     """
     Convert string of Y-M-D into proper datetime object
+
     :param date: str
     :return: datetime
     """
@@ -58,6 +69,7 @@ def _str_to_datetime(date: str) -> datetime:
 def parse_args() -> Namespace:
     """
     Parse CLI arguments
+
     :return: Namespace  # of argparse
     """
     parser = argparse.ArgumentParser(
@@ -143,7 +155,7 @@ def parse_args() -> Namespace:
         help='Show verbose file loading messages.'
     )
     # TODO: Add info option that won't filter the data, just show a summary.
-    args = parser.parse_args()
+    args: Namespace = parser.parse_args()
     return args
 
 
