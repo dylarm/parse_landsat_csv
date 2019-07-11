@@ -253,8 +253,13 @@ def parse_csv(args: Namespace) -> None:
                 all(t) for t in
                 zip(to_keep, input_csv['sensor'] in sensors)
             ]
-        # TODO: Actually filter the results
+        print(f'Keeping {sum(to_keep)} entries')
+        input_csv = input_csv[to_keep]
     # Now write out the scene IDs
+    with open(output_file,'w') as out:
+        print(f'Writing scenes to {output_file.as_posix()}')
+        out.write('\n'.join(input_csv['Entity_ID']))
+        print('Done writing')
 
 
 def main() -> None:
