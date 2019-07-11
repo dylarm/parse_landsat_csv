@@ -167,6 +167,70 @@ def _paths_good(input_path: Path, output_path: Path, overwrite: bool) -> bool:
     return True
 
 
+def _filter_csv(input_csv, args: Namespace):  # noqa: C901
+    # TODO: Reduce flake8 complexity (currently 11)
+    # List of bools of rows to keep
+    nrows: int = input_csv.shape[0]
+    to_keep: List[bool] = [True] * nrows  # Start with all of them
+    print(f'Filtering on {nrows} entries')
+    if args.start_date:
+        print(f'Removing entries before {args.start_date}')
+        to_keep = [
+            all(t) for t in
+            zip(to_keep, input_csv['acquisitionDate'] >= args.start_date)
+        ]
+    if args.end_date:
+        print(f'Removing entries after {args.end_date}')
+        to_keep = [
+            all(t) for t in
+            zip(to_keep, input_csv['acquisitionDate'] <= args.end_date)
+        ]
+    if args.cloud_cover:
+        print(f'Removing entries with more than {args.cloud_cover}% CC')
+        to_keep = [
+            all(t) for t in
+            zip(to_keep, input_csv['cloudCover'] <= args.cloud_cover)
+        ]
+    if args.grid:
+        print(f'Filtering on grid values {args.grid}')
+        # Parse grid value
+        h, v = args.grid.split(',')
+        # Filter one at a time
+        try:
+            h = int(h)
+            print(f'Horizontal: {h}')
+            to_keep = [
+                all(t) for t in
+                zip(to_keep, input_csv['Tile_Grid_Horizontal'] == h)
+            ]
+        except ValueError:
+            pass
+        try:
+            v = int(v)
+            print(f'Vertical: {v}')
+            to_keep = [
+                all(t) for t in
+                zip(to_keep, input_csv['Tile_Grid_Vertical'] == v)
+            ]
+        except ValueError:
+            pass
+    if args.region:
+        print(f'Filtering on region {args.region}')
+        to_keep = [
+            all(t) for t in
+            zip(to_keep, input_csv['Tile_Grid_Region'] == args.region)
+        ]
+    if args.sensor:
+        print(f'Filtering on sensor(s) {args.sensor}')
+        sensors: List[str] = args.sensor.split(',')
+        to_keep = [
+            all(t) for t in
+            zip(to_keep, input_csv['sensor'] in sensors)  # type: ignore
+        ]
+    print(f'Keeping {sum(to_keep)} entries')
+    return input_csv[to_keep]
+
+
 def parse_csv(args: Namespace) -> None:
     """
     Parse the given CSV file, filtering as necessary, and write out the scenes
@@ -195,66 +259,7 @@ def parse_csv(args: Namespace) -> None:
             args.grid,
             args.region,
             args.sensor]):
-        # List of bools of rows to keep
-        nrows: int = input_csv.shape[0]
-        to_keep: List[bool] = [True] * nrows  # Start with all of them
-        print(f'Filtering on {nrows} entries')
-        if args.start_date:
-            print(f'Removing entries before {args.start_date}')
-            to_keep = [
-                all(t) for t in
-                zip(to_keep, input_csv['acquisitionDate'] >= args.start_date)
-            ]
-        if args.end_date:
-            print(f'Removing entries after {args.end_date}')
-            to_keep = [
-                all(t) for t in
-                zip(to_keep, input_csv['acquisitionDate'] <= args.end_date)
-            ]
-        if args.cloud_cover:
-            print(f'Removing entries with more than {args.cloud_cover}% CC')
-            to_keep = [
-                all(t) for t in
-                zip(to_keep, input_csv['cloudCover'] <= args.cloud_cover)
-            ]
-        if args.grid:
-            print(f'Filtering on grid values {args.grid}')
-            # Parse grid value
-            h, v = args.grid.split(',')
-            # Filter one at a time
-            try:
-                h = int(h)
-                print(f'Horizontal: {h}')
-                to_keep = [
-                    all(t) for t in
-                    zip(to_keep, input_csv['Tile_Grid_Horizontal'] == h)
-                ]
-            except ValueError:
-                pass
-            try:
-                v = int(v)
-                print(f'Vertical: {v}')
-                to_keep = [
-                    all(t) for t in
-                    zip(to_keep, input_csv['Tile_Grid_Vertical'] == v)
-                ]
-            except ValueError:
-                pass
-        if args.region:
-            print(f'Filtering on region {args.region}')
-            to_keep = [
-                all(t) for t in
-                zip(to_keep, input_csv['Tile_Grid_Region'] == args.region)
-            ]
-        if args.sensor:
-            print(f'Filtering on sensor(s) {args.sensor}')
-            sensors: List[str] = args.sensor.split(',')
-            to_keep = [
-                all(t) for t in
-                zip(to_keep, input_csv['sensor'] in sensors)  # type: ignore
-            ]
-        print(f'Keeping {sum(to_keep)} entries')
-        input_csv = input_csv[to_keep]
+        input_csv = _filter_csv(input_csv, args)
     # Now write out the scene IDs
     with open(output_file, 'w') as out:
         print(f'Writing scenes to {output_file.as_posix()}')
