@@ -123,9 +123,9 @@ def parse_args() -> Namespace:
         action='store',
         required=False,
         help=('(Optional) sensor type. Comma-separated values of:\n'
-              'OLI, TIRS, TM, or ETM\n'
-              'e.g. \'-s OLI,ETM\' will only return entries that used the'
-              'OLI or ETM sensor'
+              'OLI/TIRS or ETM\n'
+              'e.g. \'-s OLI/TIRS\' will only return entries that used only'
+              'the OLI/TIRS sensor (i.e., Landsat 8)'
               )
     )
     args = parser.parse_args()
@@ -193,7 +193,8 @@ def parse_csv(args: Namespace) -> None:
             args.end_date,
             args.cloud_cover,
             args.grid,
-            args.region]):
+            args.region,
+            args.sensor]):
         # List of bools of rows to keep
         nrows: int = input_csv.shape[0]
         to_keep = [True] * nrows  # Start with all of them
@@ -245,6 +246,14 @@ def parse_csv(args: Namespace) -> None:
                 all(t) for t in
                 zip(to_keep, input_csv['Tile_Grid_Region']==args.region)
             ]
+        if args.sensor:
+            print(f'Filtering on sensor(s) {args.sensor}')
+            sensors: List[str] = args.sensor.split(',')
+            to_keep = [
+                all(t) for t in
+                zip(to_keep, input_csv['sensor'] in sensors)
+            ]
+        # TODO: Actually filter the results
     # Now write out the scene IDs
 
 
