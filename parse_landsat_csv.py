@@ -75,6 +75,7 @@ def parse_args() -> Namespace:
         type=Path,
         action='store',
         required=False,
+        default=Path('./scene_ids.txt'),
         help='filename of output text file'
     )
     parser.add_argument(
@@ -143,8 +144,6 @@ def parse_args() -> Namespace:
     )
     # TODO: Add info option that won't filter the data, just show a summary.
     args = parser.parse_args()
-    if not args.output:
-        args.output = Path('./scene_ids.txt')
     return args
 
 
