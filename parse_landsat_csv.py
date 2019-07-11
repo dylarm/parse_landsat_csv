@@ -127,6 +127,11 @@ def parse_args() -> Namespace:
               'the OLI/TIRS sensor (i.e., Landsat 8)'
               )
     )
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='Show verbose file loading messages.'
+    )
     # TODO: Add info option that won't filter the data, just show a summary.
     args = parser.parse_args()
     if not args.output:
@@ -269,7 +274,7 @@ def parse_csv(args: Namespace) -> None:
                             parse_dates=DATE_COLS,
                             date_parser=_str_to_datetime,
                             usecols=USE_COLS,
-                            verbose=True
+                            verbose=args.verbose
                             )
     # Start filtering
     if any([args.start_date,
