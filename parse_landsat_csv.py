@@ -139,6 +139,31 @@ def parse_args() -> Namespace:
     return args
 
 
+def __overwrite_file(output_path: Path, overwrite: bool) -> bool:
+    """
+    If not automatically overwriting, ask the user if they want to continue
+
+    Either delete the file and continue, or return that choice.
+
+    :param output_path: Path
+    :param overwrite: bool
+    :return: bool
+    """
+    if not overwrite:
+        print(f'File \'{output_path.as_posix()}\' exists!')
+        do_del = input('Delete/overwrite? [y/N] ')
+        if do_del == 'y':
+            output_path.unlink()
+            output_path.touch()
+        else:
+            print('Not continuing.')
+            return False
+    else:
+        output_path.unlink()
+        output_path.touch()
+    return True
+
+
 def _paths_good(input_path: Path, output_path: Path, overwrite: bool) -> bool:
     """
     Check appropriate conditions for paths, raising necessary errors
@@ -153,19 +178,11 @@ def _paths_good(input_path: Path, output_path: Path, overwrite: bool) -> bool:
                                 input_path.as_posix())
     if input_path == output_path:
         raise ValueError('Input and output must be different!')
-    if output_path.exists() and not overwrite:
-        print(f'File \'{output_path.as_posix()}\' exists!')
-        do_del = input('Delete/overwrite? [y/N] ')
-        if do_del == 'y':
-            output_path.unlink()
-            output_path.touch()
-        else:
-            print('Not continuing.')
-            return False
-    elif output_path.exists() and overwrite:
-        output_path.unlink()
-        output_path.touch()
-    elif not output_path.exists():
+    if output_path.exists():
+        cont: bool = __overwrite_file(output_path, overwrite)
+        if not cont:
+            return cont
+    else:
         output_path.touch()
     if not output_path.is_file():
         raise OSError(f'Output must be a filename')
