@@ -24,6 +24,7 @@ import pandas as pd  # type: ignore
 # The type Any is only used because pandas doesn't currently have full typing
 # support. There are technically efforts to do so, especially on user-facing
 # interfaces such as dataframes, but the effort is still ongoing.
+# A stop-gap is used below.
 
 # Global constants
 # These probably *could* be programmatically determined from some sort of fuzzy
@@ -47,6 +48,10 @@ USE_COLS: List[str] = [
     'cloudCover',
     'sensor'
 ]
+
+# Common types
+Filter = List[bool]
+DataFrame = Any  # Until pandas is ready
 
 
 def _str_to_datetime(date: str) -> datetime:
@@ -209,15 +214,15 @@ def _paths_good(input_path: Path, output_path: Path, overwrite: bool) -> bool:
     return True
 
 
-def __start_date(input_csv: Any, date: datetime) -> List[bool]:
+def __start_date(input_csv: DataFrame, date: datetime) -> Filter:
     """
     Remove dates earlier than a given time
 
-    :param input_csv: Any  # until pandas supports typing
+    :param input_csv: DataFrame  # until pandas supports typing
     :param date: datetime
-    :return: List[bool]
+    :return: Filter
     """
-    to_keep: List[bool]
+    to_keep: Filter
     if date:
         print(f'Removing entries before {date}')
         to_keep = input_csv['acquisitionDate'] >= date
@@ -226,15 +231,15 @@ def __start_date(input_csv: Any, date: datetime) -> List[bool]:
     return to_keep
 
 
-def __end_date(input_csv: Any, date: datetime) -> List[bool]:
+def __end_date(input_csv: DataFrame, date: datetime) -> Filter:
     """
     Remove dates later than the given date
 
-    :param input_csv: Any
+    :param input_csv: DataFrame
     :param date: datetime
-    :return: List[bool]
+    :return: Filter
     """
-    to_keep: List[bool]
+    to_keep: Filter
     if date:
         print(f'Removing entries after {date}')
         to_keep = input_csv['acquisitionDate'] <= date
@@ -243,15 +248,15 @@ def __end_date(input_csv: Any, date: datetime) -> List[bool]:
     return to_keep
 
 
-def __cloud_cover(input_csv: Any, cloud_cover: int) -> List[bool]:
+def __cloud_cover(input_csv: DataFrame, cloud_cover: int) -> Filter:
     """
     Remove entries whose cloud cover is greater than the given percentage
 
-    :param input_csv: Any
+    :param input_csv: DataFrame
     :param cloud_cover: int
-    :return: List[bool]
+    :return: Filter
     """
-    to_keep: List[bool]
+    to_keep: Filter
     if cloud_cover:
         print(f'Removing entries with more than {cloud_cover}% CC')
         to_keep = input_csv['cloudCover'] <= cloud_cover
@@ -260,15 +265,15 @@ def __cloud_cover(input_csv: Any, cloud_cover: int) -> List[bool]:
     return to_keep
 
 
-def __grid(input_csv: Any, grid: str) -> List[bool]:
+def __grid(input_csv: DataFrame, grid: str) -> Filter:
     """
     Remove entries whose grid values are anything but the supplied hor/vert
 
-    :param input_csv: Any
+    :param input_csv: DataFrame
     :param grid: str
-    :return: List[bool]
+    :return: Filter
     """
-    to_keep: List[bool] = [True] * input_csv.shape[0]
+    to_keep: Filter = [True] * input_csv.shape[0]
     if grid:
         print(f'Filtering on grid values {grid}')
         # Parse grid value
@@ -291,15 +296,15 @@ def __grid(input_csv: Any, grid: str) -> List[bool]:
     return to_keep
 
 
-def __region(input_csv: Any, region: str) -> List[bool]:
+def __region(input_csv: DataFrame, region: str) -> Filter:
     """
     Remove entries that aren't the given region
 
-    :param input_csv: Any
+    :param input_csv: DataFrame
     :param region: str
-    :return: List[bool]
+    :return: Filter
     """
-    to_keep: List[bool]
+    to_keep: Filter
     if region:
         print(f'Filtering on region {region}')
         to_keep = input_csv['Tile_Grid_Region'] == region
@@ -308,15 +313,15 @@ def __region(input_csv: Any, region: str) -> List[bool]:
     return to_keep
 
 
-def __sensor(input_csv: Any, sensor: str) -> List[bool]:
+def __sensor(input_csv: DataFrame, sensor: str) -> Filter:
     """
     Remove entries that don't use the given sensor(s)
 
-    :param input_csv: Any
+    :param input_csv: DataFrame
     :param sensor: str
-    :return: List[bool]
+    :return: Filter
     """
-    to_keep: List[bool] = [True] * input_csv.shape[0]
+    to_keep: Filter = [True] * input_csv.shape[0]
     if sensor:
         print(f'Filtering on sensor(s) {sensor}')
         sensors: List[str] = sensor.split(',')
@@ -325,7 +330,7 @@ def __sensor(input_csv: Any, sensor: str) -> List[bool]:
     return to_keep
 
 
-def _filter_csv(input_csv: Any, args: Namespace) -> Any:
+def _filter_csv(input_csv: DataFrame, args: Namespace) -> DataFrame:
     """
     Remove entries based on supplied arguments
 
@@ -337,18 +342,18 @@ def _filter_csv(input_csv: Any, args: Namespace) -> Any:
         region
         sensor
 
-    :param input_csv: Any
+    :param input_csv: DataFrame
     :param args: Namespace
-    :return: Any  # The filtered input_csv
+    :return: DataFrame  # The filtered input_csv
     """
     print(f'Filtering on {input_csv.shape[0]} entries')
-    to_keep: List[bool] = [all(t) for t in
-                           zip(__start_date(input_csv, args.start_date),
-                               __end_date(input_csv, args.end_date),
-                               __cloud_cover(input_csv, args.cloud_cover),
-                               __grid(input_csv, args.grid),
-                               __region(input_csv, args.region),
-                               __sensor(input_csv, args.sensor))]
+    to_keep: Filter = [all(t) for t in
+                       zip(__start_date(input_csv, args.start_date),
+                           __end_date(input_csv, args.end_date),
+                           __cloud_cover(input_csv, args.cloud_cover),
+                           __grid(input_csv, args.grid),
+                           __region(input_csv, args.region),
+                           __sensor(input_csv, args.sensor))]
     print(f'Keeping {sum(to_keep)} entries')
     return input_csv[to_keep]
 
@@ -367,13 +372,13 @@ def parse_csv(args: Namespace) -> None:
         return
     # Read file and begin parsing
     print(f'{input_file.as_posix()} -> {output_file.as_posix()}')
-    input_csv: Any = pd.read_csv(input_file,
-                                 # nrows=10000,  # 10,000 for testing
-                                 parse_dates=DATE_COLS,
-                                 date_parser=_str_to_datetime,
-                                 usecols=USE_COLS,
-                                 verbose=args.verbose
-                                 )
+    input_csv: DataFrame = pd.read_csv(input_file,
+                                       # nrows=10000,  # 10,000 for testing
+                                       parse_dates=DATE_COLS,
+                                       date_parser=_str_to_datetime,
+                                       usecols=USE_COLS,
+                                       verbose=args.verbose
+                                       )
     # Start filtering
     if any([args.start_date,
             args.end_date,
