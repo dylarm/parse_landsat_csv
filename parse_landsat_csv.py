@@ -395,8 +395,10 @@ def parse_csv(args: Namespace) -> None:
 
 
 def main() -> None:
+    print('') # Extra blank line for space
     args: Namespace = parse_args()
     parse_csv(args)
+    print('')
 
 
 if __name__ == '__main__':
