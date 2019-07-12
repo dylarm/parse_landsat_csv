@@ -7,6 +7,7 @@ This project is inspired by [parse_landsat_xml](https://github.com/and-viceversa
   - [Simple Example](#simple-example)
   - [Flags](#flags)
   - [More Examples](#more-examples)
+- [License](#liscence)
 
 ---
 
@@ -134,3 +135,7 @@ File 'scene_ids.txt' exists!
 Delete/overwrite? [y/N] n
 Not continuing.
 ```
+
+
+## License
+This work is licensed under the [Apache License 2.0](LICENSE).
